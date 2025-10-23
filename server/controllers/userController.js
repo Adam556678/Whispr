@@ -42,7 +42,7 @@ const registerUser = async (req, res) => {
             token
         }});
     } catch (error) {
-        console.log(errro);
+        console.log(error);
         return res.status(500).json({message: "Something went wrong"});
     }
 };
@@ -58,11 +58,37 @@ const loginUser = async (req, res) => {
         if (!isValidPassword) return res.status(400).json("Invalid Credentials");
         
         const token = createToken(user._id);
-
+        
         res.status(200).json({message: "Logged in successfully"});
     } catch (error) {
-        
+        console.log(error);
+        return res.status(500).json({message: "Something went wrong"});
     }
 };
 
-module.exports = {registerUser, loginUser};
+const findUser = async (req, res) => {
+    const {userId} = req.params
+    
+    try {
+        const user = UserModel.findById(userId);
+        if (!user)
+            return res.status(404).json({message: "User not found"});
+        
+        res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message: "Something went wrong"});
+    }
+};
+
+const getAllUsers = async (req, res) => {    
+    try {
+        const users = UserModel.find();
+        res.status(200).json(users);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({message: "Something went wrong"});
+    }
+};
+
+module.exports = {registerUser, loginUser, findUser, getAllUsers};
