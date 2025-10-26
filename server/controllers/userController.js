@@ -35,12 +35,7 @@ const registerUser = async (req, res) => {
     
         const token = createToken(user._id);
         
-        res.status(201).json({message: "User is registered", data: {
-            _id: user._id,
-            name,
-            email,
-            token
-        }});
+        res.status(201).json({_id: user._id, name, email, token});
     } catch (error) {
         console.log(error);
         return res.status(500).json({message: "Something went wrong"});
@@ -59,7 +54,7 @@ const loginUser = async (req, res) => {
         
         const token = createToken(user._id);
         
-        res.status(200).json({message: "Logged in successfully"});
+        res.status(200).json({_id: user._id, name: user.name, email, token});
     } catch (error) {
         console.log(error);
         return res.status(500).json({message: "Something went wrong"});
