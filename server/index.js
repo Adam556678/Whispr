@@ -11,6 +11,7 @@ app.use(cors());
 // Routes
 app.use("/api/users", require("./routes/userRoute.js"));
 app.use("/api/chats", require("./routes/chatRoute.js"));
+app.use("/api/messages", require("./routes/messageRoute.js"));
 app.get("/", (req, res) => {
     console.log("Welcome to our Chat App");
     
