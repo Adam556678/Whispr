@@ -78,7 +78,7 @@ const findUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {    
     try {
-        const users = UserModel.find();
+        const users = await UserModel.find();
         res.status(200).json(users);
     } catch (error) {
         console.log(error);

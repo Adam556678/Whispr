@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import { getRequest, baseUrl, postRequest } from "../utils/services";
 
 export const ChatContext = createContext();
@@ -16,14 +16,14 @@ export const ChatContextProvider = ({children, user}) => {
             if (response.error){
                 return console.log("Error fetching potential users: ", response);
             }
-            const pChats = response.filter((user) => { 
-                if (user._id === useEffect._id) return false;
+            const pChats = response.filter((u) => { 
+                if (user?._id === u._id) return false;
 
+                let isChatCreated = false;
                 if (userChats){
-                    let isChatCreated = false;
 
                     isChatCreated = userChats?.some((chat) => {
-                        return chat.members[0] === u._id || chat.members[1] === u._id;
+                        return chat.members.includes(u._id);
                     });
                 }
 
@@ -35,6 +35,17 @@ export const ChatContextProvider = ({children, user}) => {
 
         getUsers();
     }, [userChats]);
+
+    const createChat = useCallback(async(firstId, secondId) => {
+        const response = await postRequest(`${baseUrl}/chats`, 
+            JSON.stringify({firstId, secondId}));
+        
+        if (response.error){
+            return console.log("Error creating chat : ", response);
+        }
+
+        setUserChats((prev) => [...prev, response]);
+    }, []);
 
     useEffect(() => {
         const getUserChats = async () => {
@@ -60,7 +71,8 @@ export const ChatContextProvider = ({children, user}) => {
         userChats,
         isUserChatsLodaing,
         userChatsError,
-        potentialChats
+        potentialChats,
+        createChat
     }}>
         {children}
     </ChatContext.Provider>)
