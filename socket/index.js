@@ -20,6 +20,15 @@ io.on("connection", (socket) => {
         io.emit("getOnlineUsers", onlineUsers);
     });
     
+    // Add message event
+    socket.on("sendMessage", (message) => {
+        const user = onlineUsers.find((user) => user.userId === message.recipientId);
+
+        if (user){
+            io.to(user.socketId).emit("getMessage", message);
+        }
+    });
+
     // User disconnets event
     socket.on("disconnect", () => {
         onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id)

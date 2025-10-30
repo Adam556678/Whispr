@@ -42,6 +42,32 @@ export const ChatContextProvider = ({children, user}) => {
         }
     }, [socket,  user?._id]);
 
+    // send messages
+    useEffect(() => {
+        if (!socket) return ;
+        
+        const recipientId = currentChat?.members?.find((id) => id !== user?._id);
+        
+        socket.emit("sendMessage", {...newMessage, recipientId});
+    }, [newMessage]);
+    
+    // Recieve message
+    useEffect(() => {
+        if (!socket) return ;
+        
+        socket.on("getMessage", (message) => {
+            if (currentChat?._id !== message.chatId) return ;
+
+            setMessages((prev) => [...prev, message]);
+        });
+
+        // Do this when the effect ends or restarts.
+        return () => {
+            socket.off("getMessage");
+        }
+
+    }, [socket, currentChat])
+
     useEffect(() => {
         const getUsers = async () => {
             const response = await getRequest(`${baseUrl}/users`);
