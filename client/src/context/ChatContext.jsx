@@ -16,8 +16,9 @@ export const ChatContextProvider = ({children, user}) => {
     const [sendTextMessageError, setSendTextMessageError] = useState(null);
     const [newMessage, setNewMessage] = useState(null);
     const [socket, setSocket] = useState(null);
+    const [onlineUsers, setOnlineUsers] = useState([]);
 
-    console.log("current chat messages: ", messages);
+    console.log("Online users: ", onlineUsers);
     
     useEffect(() => {
         const newSocket = io("http://localhost:3000");
@@ -27,6 +28,19 @@ export const ChatContextProvider = ({children, user}) => {
             newSocket.disconnect();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (!socket) return;        
+        
+        socket.emit("addNewUser", user?._id);
+        socket.on("getOnlineUsers", (onlineUsers) => {
+            setOnlineUsers(onlineUsers);
+        });
+
+        return () => {
+            socket?.off("getOnlineUsers");
+        }
+    }, [socket,  user?._id]);
 
     useEffect(() => {
         const getUsers = async () => {
@@ -138,7 +152,8 @@ export const ChatContextProvider = ({children, user}) => {
         messages,
         isMessagesLoading,
         messagesError,
-        sendTextMessage
+        sendTextMessage,
+        onlineUsers
     }}>
         {children}
     </ChatContext.Provider>)
