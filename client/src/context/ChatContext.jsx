@@ -17,8 +17,10 @@ export const ChatContextProvider = ({children, user}) => {
     const [newMessage, setNewMessage] = useState(null);
     const [socket, setSocket] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
 
-    console.log("Online users: ", onlineUsers);
+    console.log("Notifications: ", notifications);
     
     useEffect(() => {
         const newSocket = io("http://localhost:3000");
@@ -51,7 +53,7 @@ export const ChatContextProvider = ({children, user}) => {
         socket.emit("sendMessage", {...newMessage, recipientId});
     }, [newMessage]);
     
-    // Recieve message
+    // Recieve message and notification
     useEffect(() => {
         if (!socket) return ;
         
@@ -61,9 +63,20 @@ export const ChatContextProvider = ({children, user}) => {
             setMessages((prev) => [...prev, message]);
         });
 
+        socket.on("getNotification", (res) => {
+            const isChatOpen = currentChat?.members.some((id) => id === res?.senderId);
+
+            if (isChatOpen){
+                setNotifications((prev) => [{...res, isRead: true}, ...prev])
+            }else{
+                setNotifications((prev) => [res, ...prev])
+            }
+        });
+
         // Do this when the effect ends or restarts.
         return () => {
             socket.off("getMessage");
+            socket.off("getNotification");
         }
 
     }, [socket, currentChat])
@@ -90,6 +103,7 @@ export const ChatContextProvider = ({children, user}) => {
             });
 
             setPotentialChats(pChats);
+            setAllUsers(response);
         };
 
         getUsers();
@@ -167,6 +181,16 @@ export const ChatContextProvider = ({children, user}) => {
         getUserChats();
     }, [user]);
 
+    const markAllNotificationsAsRead = useCallback((notifications) => {
+        const modifiedNotifications = notifications.map((notification) => {
+            return {...notification, isRead: true}
+        });
+
+        setNotifications(modifiedNotifications);
+    }, []);
+
+    const markNotificationAsRead = useCallback(()=>{},[]);
+
     return (<ChatContext.Provider value={{
         userChats,
         isUserChatsLodaing,
@@ -179,7 +203,10 @@ export const ChatContextProvider = ({children, user}) => {
         isMessagesLoading,
         messagesError,
         sendTextMessage,
-        onlineUsers
+        onlineUsers,
+        notifications,
+        allUsers,
+        markAllNotificationsAsRead
     }}>
         {children}
     </ChatContext.Provider>)
