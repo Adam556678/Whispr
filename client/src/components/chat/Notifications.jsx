@@ -8,7 +8,7 @@ const Notifications = () => {
 
     const [isOpen, setIsOpen] = useState(false);
     const {user} = useContext(AuthContext);
-    const {notifications, userChats, allUsers, markAllNotificationsAsRead} = useContext(ChatContext);
+    const {notifications, userChats, allUsers, markAllNotificationsAsRead, markNotificationAsRead} = useContext(ChatContext);
 
     const unreadNotifications = unreadNotificationsFunc(notifications);
     const modifiedNotifications = notifications.map((n) => {
@@ -44,7 +44,13 @@ const Notifications = () => {
             <span className="notification">No notifications yet...</span>
             : null}
             {modifiedNotifications && modifiedNotifications.map((n, index) => {
-                return <div key={index} className={n.isRead ? 'notification' : 'notification not-read'}>
+                return <div 
+                key={index} 
+                className={n.isRead ? 'notification' : 'notification not-read'}
+                onClick={() => {
+                    markNotificationAsRead(n, userChats, user, notifications);
+                    setIsOpen(false);
+                }}>
                     <span>{`${n.senderName} sent you a message`}</span>
                     <span className="notification-time">{moment(n.date).calendar()}</span>
                 </div>
